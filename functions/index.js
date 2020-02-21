@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const express = require('express');
 const bodyParser = require('body-parser')
+const cors = require('cors')
 
 admin.initializeApp(functions.config().firebase);
 
@@ -13,6 +14,7 @@ const main = express();
 
 const collectionName = 'animals'
 
+main.use(cors())
 main.use('/v1/' + collectionName, app);
 main.use(bodyParser.json());
 main.use(bodyParser.urlencoded({ extended: false }));
