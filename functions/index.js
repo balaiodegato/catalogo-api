@@ -42,6 +42,17 @@ app.post('/', async (req, res) => {
     res.send(docDataWithId(doc));
 })
 
+app.post('/saveAll', async (req, res) => {
+    try {
+        req.body.map(async pet => {
+            await db.collection(collectionName).add(pet)
+        })
+        res.send('Pets successfully registered!');
+    } catch(err) {
+        res.status(500).send({ err: err.message })
+    }
+})
+
 app.patch('/:id', async (req, res) => {
     const doc = db.collection(collectionName).doc(req.params.id);
     const docSnapshot = await doc.get()
