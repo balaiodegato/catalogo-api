@@ -59,6 +59,12 @@ app.patch('/:id', async (req, res) => {
     res.send(docDataWithId(await doc.get()));
 })
 
+app.put('/:id', async (req, res) => {
+    const doc = db.collection(collectionName).doc(req.params.id);
+    await doc.set(req.body);
+    res.send(docDataWithId(await doc.get()));
+})
+
 app.get('/:id', async (req, res) => {
     const doc = await db.collection(collectionName).doc(req.params.id).get();
     res.status(200).send(docDataWithId(doc));
