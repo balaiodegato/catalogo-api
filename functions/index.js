@@ -21,6 +21,21 @@ main.use('/v1/' + collectionName, app);
 main.use(bodyParser.json());
 main.use(bodyParser.urlencoded({ extended: false }));
 
+// Sorts (deeply) the object attributes so that JSON.stringify always
+// returns the same string - this is required for the etag to work
+const sortObj = (obj) => (
+    obj === null || typeof obj !== 'object'
+    ? obj
+    : Array.isArray(obj)
+        ? obj.map(sortObj)
+        : Object.assign(
+            {},
+            ...Object.entries(obj)
+                .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+                .map(([k, v]) => ({ [k]: sortObj(v) }))
+        )
+)
+
 function docDataWithId(doc) {
     const docClone = Object.assign({}, doc.data())
     docClone.id = doc.id
@@ -35,7 +50,7 @@ app.get('/', async (req, res) => {
         list.push(docDataWithId(doc));
     });
 
-    res.status(200).send(list);
+    res.status(200).send(sortObj(list));
 })
 
 app.post('/', async (req, res) => {
@@ -69,7 +84,7 @@ app.put('/:id', async (req, res) => {
 
 app.get('/:id', async (req, res) => {
     const doc = await db.collection(collectionName).doc(req.params.id).get();
-    res.status(200).send(docDataWithId(doc));
+    res.status(200).send(sortObj(docDataWithId(doc)));
 })
 
 module.exports.api = functions.https.onRequest(main);
