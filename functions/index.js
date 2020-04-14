@@ -12,6 +12,8 @@ const db = admin.firestore();
 const app = express();
 const main = express();
 
+app.set('etag', true);
+
 const collectionName = 'animals'
 
 main.use(cors())
