@@ -73,7 +73,9 @@ app.post('/saveAll', async (req, res) => {
 
 app.patch('/:id', async (req, res) => {
     const doc = db.collection(collectionName).doc(req.params.id);
-    await doc.update(req.body);
+    if (Object.keys(req.body || {}).length > 0) {
+        await doc.update(req.body);
+    }
     res.send(docDataWithId(await doc.get()));
 })
 
