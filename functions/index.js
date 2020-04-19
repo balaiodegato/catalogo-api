@@ -8,6 +8,7 @@ const cors = require('cors')
 admin.initializeApp(functions.config().firebase);
 
 const db = admin.firestore();
+const bucket = admin.storage().bucket();
 
 const app = express();
 const main = express();
@@ -85,6 +86,25 @@ app.put('/:id', async (req, res) => {
 app.get('/:id', async (req, res) => {
     const doc = await db.collection(collectionName).doc(req.params.id).get();
     res.status(200).send(sortObj(docDataWithId(doc)));
+})
+
+app.put('/:id/originalPhoto', bodyParser.raw(), async (req, res) => {
+    const imageFile = bucket.file('photos/original/' + req.params.id);
+    await imageFile.save(req.body);
+    res.status(200).send();
+})
+
+app.get('/:id/originalPhoto', async (req, res) => {
+    const imageFile = bucket.file('photos/original/' + req.params.id);
+    if (!(await imageFile.exists())[0]) {
+        res.status(404).send();
+    } else {
+        const data = await imageFile.download();
+        if (req.query.cachekey) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000')
+        }
+        res.status(200).send(data[0]);
+    }
 })
 
 module.exports.api = functions.https.onRequest(main);
