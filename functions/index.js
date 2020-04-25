@@ -90,14 +90,27 @@ app.get('/:id', async (req, res) => {
     res.status(200).send(sortObj(docDataWithId(doc)));
 })
 
-app.put('/:id/originalPhoto', bodyParser.raw(), async (req, res) => {
-    const imageFile = bucket.file('photos/original/' + req.params.id);
+const PHOTO_SIZES = ['original', 'medium', 'small']
+function validateSize(req, res, next) {
+    if (!PHOTO_SIZES.includes(req.params.size)) {
+        res.status(404).send()
+        return
+    }
+    next()
+}
+
+function getPhotoPath(id, size) {
+    return `photos/${size}/${id}`
+}
+
+app.put('/:id/photos/:size', validateSize, bodyParser.raw(), async (req, res) => {
+    const imageFile = bucket.file(getPhotoPath(req.params.id, req.params.size));
     await imageFile.save(req.body);
     res.status(200).send();
 })
 
-app.get('/:id/originalPhoto', async (req, res) => {
-    const imageFile = bucket.file('photos/original/' + req.params.id);
+app.get('/:id/photos/:size', validateSize, async(req, res) => {
+    const imageFile = bucket.file(getPhotoPath(req.params.id, req.params.size));
     if (!(await imageFile.exists())[0]) {
         res.status(404).send();
     } else {
