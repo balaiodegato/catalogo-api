@@ -51,11 +51,12 @@ function docDataWithId(doc) {
 
 async function getListFromCache() {
     const snapshot = await db.collection(listCacheCollectionName).get();
-    if (snapshot.docs.length === 0 || snapshot.docs.some(doc => doc.data() === null)) {
+    const docs = snapshot.docs.filter(doc => doc.data().data)
+    if (docs.length === 0) {
         return null;
     }
 
-    const inflatedDocs = await Promise.all(snapshot.docs.map(async doc => {
+    const inflatedDocs = await Promise.all(docs.map(async doc => {
         const inflatedData = await inflate(Buffer.from(doc.data().data, 'base64'))
         return JSON.parse(inflatedData);
     }));
