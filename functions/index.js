@@ -278,8 +278,13 @@ async function sendCastrationEmail(pet) {
     }
 }
 
+function isNotStar(pet) {
+    const status = (pet.status || '').trim().toLowerCase()
+    return (status !== 'estrelinha' && status !== 'star')
+}
+
 function shouldSendCastrationEmail(pet) {
-    if (!pet.castrated && pet.castration_date) {
+    if (!pet.castrated && isNotStar(pet) && pet.castration_date) {
         const date = moment(pet.castration_date)
         if (date.isValid() && date.isBefore(moment(), 'day')) {
             return true
