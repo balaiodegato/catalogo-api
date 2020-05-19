@@ -132,6 +132,33 @@ app.post('/saveAll', async (req, res) => {
     }
 })
 
+app.get('/count', async (req, res) => {
+    try {
+        const countPets = {
+            cat: {
+                available: 0,
+                adopted: 0,
+                star: 0,
+                resident: 0
+            },
+            dog: {
+                available: 0,
+                adopted: 0,
+                star: 0,
+                resident: 0
+            }
+        }
+        
+        const pets = await getList()
+        pets.map(pet => pet[pet.kind][pet.status]++)
+    
+        res.send(countPets)
+    } catch(err) {
+        console.error(err)
+        res.status(500).send({ err: err.message })
+    }
+})
+
 app.patch('/:id', async (req, res) => {
     const doc = db.collection(collectionName).doc(req.params.id);
     if (Object.keys(req.body || {}).length > 0) {
