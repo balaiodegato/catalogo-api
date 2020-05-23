@@ -139,23 +139,25 @@ app.post('/saveAll', async (req, res) => {
 
 app.get('/count', async (req, res) => {
     try {
-        const countPets = {
-            cat: {
-                available: 0,
-                adopted: 0,
-                star: 0,
-                resident: 0
-            },
-            dog: {
-                available: 0,
-                adopted: 0,
-                star: 0,
-                resident: 0
-            }
-        }
-        
+        const countPets = { 
+            cat: {}, 
+            dog: {}, 
+            petWithoutInfo: { pets: [], quantity: 0 }
+        }        
         const pets = await getList()
-        pets.map(pet => pet[pet.kind][pet.status]++)
+
+        pets.map(pet => { 
+            if(pet.kind && pet.status) {
+                if (!countPets[pet.kind][pet.status]) {
+                    countPets[pet.kind][pet.status] = 0
+                }
+                countPets[pet.kind][pet.status]++
+            } else {
+                countPets.petWithoutInfo.pets.push(pet)
+                countPets.petWithoutInfo.quantity++
+            }
+            return true
+        })
     
         res.send(countPets)
     } catch(err) {
